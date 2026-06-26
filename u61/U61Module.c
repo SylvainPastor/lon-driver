@@ -320,7 +320,8 @@ static netdev_tx_t  u61_dev_xmit(struct sk_buff *skb, struct net_device *dev) {
 	return NETDEV_TX_OK;
 }
 
-static int u61_dev_ioctl(struct net_device *dev, struct ifreq *ifr, int cmd) {
+static int u61_dev_ioctl(struct net_device *dev, struct ifreq *ifr,
+		void __user *data, int cmd) {
 	struct u61_priv *priv = netdev_priv(dev);
 	if (cmd == SIOCDEVPRIVATE) {
 		memcpy(&ifr->ifr_data, priv->tty->name, strlen(priv->tty->name));
@@ -338,7 +339,7 @@ static const struct net_device_ops u61_netdev_ops = {
 	.ndo_open = u61_dev_open,
 	.ndo_stop = u61_dev_stop,
 	.ndo_start_xmit = u61_dev_xmit,
-	.ndo_do_ioctl = u61_dev_ioctl,
+	.ndo_siocdevprivate = u61_dev_ioctl,
     .ndo_set_mac_address = U61SetHWAddr
 };
 
