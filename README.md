@@ -8,3 +8,11 @@ This repository includes the following directories:
 - u50 -- Serial USB LON Driver: implements a LON driver for a LON USB network interface that incorporate a serial USB interface.  Compatible with the EnOcean U10 Revision C and U60 FT USB Network Interfaces.
 
 - u61 -- Parallel USB LON Driver:  implements a LON driver for a LON USB network interface that incorporate a parallel USB interface.  Compatible with the EnOcean U10 FT Revision B, U20 PL, U60 TP-1250, and U70 PL USB Network Interfaces.
+
+## Linux 6.17 / Ubuntu 24.04
+
+The `u61` driver and the `lonifd` daemon have been ported to build and run on Linux 6.17 _(Ubuntu 24.04)_. 
+
+See [u61.md](u61.md) for a build, load and test guide for the USB dongle.
+
+> **Note:** the `u50` driver has **not been tested** on this kernel yet. Only `u61` has been validated so far (with a TP/FT-10 FTDI dongle).
