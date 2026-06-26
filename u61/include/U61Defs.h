@@ -26,6 +26,8 @@
 // Definitions private to the DLL.
 ///////////////////////////////////////////////////////////////////////////////
 
+#pragma once
+
 #include "Ldv32.h"
 #include "platform.h"
 #include "U61Driver.h"

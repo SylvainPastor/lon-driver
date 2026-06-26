@@ -1,0 +1,18 @@
+# Out-of-tree kernel module build artifacts
+*.o
+*.ko
+*.mod
+*.mod.c
+*.mod.o
+*.symvers
+Module.symvers
+modules.order
+*.order
+*.d
+.*.cmd
+.tmp_versions/
+.cache.mk
+modules.builtin*
+
+# lonifd daemon binary
+/lonifd/lonifd

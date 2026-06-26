@@ -199,7 +199,7 @@ void u61_bump(struct u61_priv *priv, uint8_t *buf, int count) {
 	skb->protocol = htons(U61_PROTO);
 	dev->stats.rx_packets++;
 	dev->stats.rx_bytes += count;
-	netif_rx_ni(skb);
+	netif_rx(skb);
 }
 
 static int u61_dev_init(struct net_device *dev) {
@@ -230,7 +230,7 @@ static int U61SetHWAddr(struct net_device *dev, void *dummy)
     if (priv->state.m_bHaveMAC) {
         dev->addr_len = 6;
         memcpy(dev->perm_addr, priv->state.m_mac_id, dev->addr_len);
-        memcpy(dev->dev_addr, priv->state.m_mac_id, dev->addr_len);
+        dev_addr_set(dev, priv->state.m_mac_id);
         memset(dev->broadcast, 0xff, dev->addr_len);
         LDDebugInform("netdev perm_addr and dev_addr set!");
     }
@@ -239,8 +239,8 @@ static int U61SetHWAddr(struct net_device *dev, void *dummy)
 
 static int u61_dev_open(struct net_device *dev) {
 	struct u61_priv *priv = netdev_priv(dev);
-    struct sockaddr sp;
-    sp.sa_family = dev->type;
+    struct sockaddr_storage sp;
+    sp.ss_family = dev->type;
 	if (priv->tty == NULL)
 		return -ENODEV;
 	U61LinkStart(&priv->state, U61_OPEN_LAYER2);
@@ -452,20 +452,19 @@ static void    u61_ldisc_close(struct tty_struct *tty)
 	}
 }
 
-static int u61_ldisc_ioctl(struct tty_struct *tty, struct file *file, unsigned int cmd, unsigned long arg)
+static int u61_ldisc_ioctl(struct tty_struct *tty, unsigned int cmd, unsigned long arg)
 {
 	return 0;
 }
 
-static int u61_ldisc_hangup(struct tty_struct *tty)
+static void u61_ldisc_hangup(struct tty_struct *tty)
 {
 	u61_ldisc_close(tty);
-	return 0;
 }
 
 // DWF I added the spinlock - seems necessary.
 static void u61_ldisc_receive_buf(struct tty_struct *tty,
-		const unsigned char *cp, char *fp, int count)
+		const unsigned char *cp, const unsigned char *fp, size_t count)
 {
 	struct u61_priv *priv = tty->disc_data;
 	if (!priv || !netif_running(priv->dev)) return;
@@ -503,7 +502,7 @@ static void u61_ldisc_write_wakeup(struct tty_struct *tty)
 
 static struct tty_ldisc_ops u61_ldisc = {
 	.owner = THIS_MODULE,
-	.magic = TTY_LDISC_MAGIC,
+	.num = N_U61,
 	.name = "u61",
 	.open = u61_ldisc_open,
 	.close = u61_ldisc_close,
@@ -629,7 +628,7 @@ static int __init u61_init(void) {
     else {
         err = rtnl_link_register(&u61_link_ops);
         dev_add_pack(&ldv_packet_type);
-        err = tty_register_ldisc(N_U61, &u61_ldisc);
+        err = tty_register_ldisc(&u61_ldisc);
         
         err2 = sysfs_create_file(obdn_file, &obdn_attribute.attr);
         if (err2) {
@@ -642,7 +641,7 @@ static int __init u61_init(void) {
 static void __exit u61_exit(void) {
 	rtnl_link_unregister(&u61_link_ops);	// got an Oops / seg fault here a few times.
 	dev_remove_pack(&ldv_packet_type);
-	tty_unregister_ldisc(N_U61);
+	tty_unregister_ldisc(&u61_ldisc);
     sysfs_remove_file(obdn_file, &obdn_attribute.attr);
 }
 
